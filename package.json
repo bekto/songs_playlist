@@ -16,6 +16,7 @@
     "infinite-scroll": "^3.0.6",
     "mongoose": "^5.7.5",
     "mongoose-paginate": "^5.0.3",
-    "socketio": "^1.0.0"
+    "socketio": "^1.0.0",
+    "ws": "^7.1.2"
   }
 }
