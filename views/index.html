@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Playlist</title>
+    <link href="https://fonts.googleapis.com/css?family=Roboto:900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body,html {height: 100%;}
+        body { font: 13px Helvetica, Arial;background-color: gray; }
+        #messages { list-style-type: none; margin: 0; padding: 0;overflow-y: auto; }
+        #messages li { padding: 5px 10px; font-size: 30px;}
+        #messages li:nth-child(odd) { background: #eee; }
+
+        #leftD { width: 70%;min-height: 100%;height: auto; background-color: gray;float: left;}
+        #rightD { width: 30%;height: 100%; margin-left: 70%;;float: right; background-color: darkgray; position:fixed;}
+        hr {
+            width: 90%;
+            height: 8px;
+            margin-left: auto;
+            margin-right: auto;
+            background-color:rgb(230, 230, 230);
+            border: 0 none;
+            margin-top: 30px;
+            margin-bottom:30px;
+            }
+        .song {
+            width: 80%;
+            margin-left: 10%;
+            font-family: 'Roboto', sans-serif;
+            color: rgb(54, 54, 54);
+            font-size: 20px;
+            height: 110px;
+            padding-top: 45px;
+            padding-top: 45px;
+            padding-left: 20px;
+            padding-right: 20px;
+            margin-top: 25px;
+            background-color: rgb(200, 200, 200);
+            border-radius: 10px 10px 10px 10px;
+            -moz-border-radius: 10px 10px 10px 10px;
+            -webkit-border-radius: 10px 10px 10px 10px;
+            border: 0px solid #000000;
+        }
+        #form select{
+            display: block;
+            height: 30px;
+            width: 90%;
+            margin-left: auto;
+            margin-right: auto;
+            margin-bottom: 40px;
+        }
+        #form {
+            width: 90%;
+            margin-left: auto;
+            margin-right: auto;
+            margin-top: 50px;
+            background-color: rgb(219, 219, 219);
+            padding-top: 40px;
+            padding-bottom: 20px;
+        }
+      </style>
+</head>
+<body>
+    <div id="leftD">
+        <hr>
+        <div id="leftDC"></div>
+        <hr id="bar">
+    </div>
+    <div id="rightD">
+            <hr>
+            <h3 style="margin-left:5%;font-family: 'Roboto', sans-serif;font-size: 50px;">Filter</h3>
+            <hr>
+        <div id="form">
+            <h2 style="margin-left:5%;font-family: 'Roboto', sans-serif;">Artist:</h2>
+            <select name="artist" id="artistSelect">
+                <option value="All">Any Artist</option>
+            </select>
+            <h2 style="margin-left:5%;font-family: 'Roboto', sans-serif;">Genre:</h2>
+            <select name="genre" id="genreSelect">
+                <option value="All">Any Genre</option>
+            </select>
+            <h2 style="margin-left:5%;font-family: 'Roboto', sans-serif;">Year:</h2>
+            <select name="year" id="yearSelect">
+                <option value="All">Any Year</option>
+            </select>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/infinite-scroll@3/dist/infinite-scroll.pkgd.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+    <script>
+        $(function () {
+            let socket = io();
+            let page = 1;
+            socket.on('addSongs', function (songs) {
+                songs.forEach(el => {
+                    $('#leftDC').append('<div class="song"><div style="float: left;">'+el.artist+' | '+el.songTitle+' | '+el.year+'</div><div style="float: right;">'+el.genre+'</div></div>')
+                });
+                page = page+1;
+            });
+            socket.on('artistOptions', function (artists) {
+                artists.forEach(el => {
+                    $('#artistSelect').append('<option value="'+el+'">'+el+'</option>')
+                });
+            });
+            socket.on('genreOptions', function (genres) {
+                genres.forEach(el => {
+                    $('#genreSelect').append('<option value="'+el+'">'+el+'</option>')
+                });
+            });
+            socket.on('yearOptions', function (years) {
+                years.forEach(el => {
+                    $('#yearSelect').append('<option value="'+el+'">'+el+'</option>')
+                });
+            });
+            let options = {
+                root: null,
+                rootMargins: "30%",
+                threshold: 0.5
+            };
+
+            const observer = new IntersectionObserver(handleIntersect, options);
+            observer.observe(document.querySelector('#bar'));
+        
+            function handleIntersect(entries) {
+                if(entries[0].isIntersecting)
+                    socket.emit('moreSongs',page,$( "#artistSelect option:selected" ).text(),$( "#genreSelect option:selected" ).text(),$( "#yearSelect option:selected" ).text());
+            }
+
+            $( "#artistSelect, #genreSelect, #yearSelect" ).change(() => {
+                $( "#leftDC" ).empty();
+                page = 1;
+                socket.emit('filter',page,$( "#artistSelect option:selected" ).text(),$( "#genreSelect option:selected" ).text(),$( "#yearSelect option:selected" ).text());
+            });
+            socket.on('addSongsFilter', function (songs) {
+                $( "#leftDC" ).empty();
+                page = 1;
+                songs.forEach(el => {
+                    $('#leftDC').append('<div class="song"><div style="float: left;">'+el.artist+' | '+el.songTitle+' | '+el.year+'</div><div style="float: right;">'+el.genre+'</div></div>')
+                });
+            });
+        });   
+    </script>
+</body>
+</html>

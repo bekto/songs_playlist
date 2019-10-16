@@ -1,0 +1,21 @@
+{
+  "name": "songs_playlist",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "config": "^3.2.3",
+    "csvtojson": "^2.0.10",
+    "express": "^4.17.1",
+    "infinite-scroll": "^3.0.6",
+    "mongoose": "^5.7.5",
+    "mongoose-paginate": "^5.0.3",
+    "socketio": "^1.0.0"
+  }
+}
